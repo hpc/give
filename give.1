@@ -1,0 +1,93 @@
+.\" give.1 -- 
+.TH GIVE 1 "6 Oct 2010" 
+.SH NAME
+give/take -- transfer files between users
+.SH SYNOPSIS
+.B give username list
+.br
+.B give [-l] [-a] [username]
+.br
+.B give [-l] [-n] [-i] [-f] username list
+.br
+.B give -u username [list]
+.br
+.SH DESCRIPTION
+
+.B give
+and
+.B take
+are a set of companion utilities that allow a secure transfer of 
+files form one user to another without exposing the files to third 
+parties.  The somewhat strange syntax is a carryover from the 
+original "give" utility written for the "LTSS" operating system.
+
+The named files are copied to a spool area where they can be 
+retrieved by the user running the "take" program.  Ownership of the 
+files remains with the giver until they are taken, and will count 
+against any file system quotas imposed on the giver.
+
+Certain users may be limited to take files only from specific 
+givers.  For these users, files may only be taken from givers 
+who are members of the gt-<uid> group where uid is the UNIX id 
+of the limited user.
+
+.SH OPTIONS
+.TP
+.B \-a or \-\-all or \-\-regive
+Use the filenames already given to the specified 
+.I username
+as the 
+.I list
+argument (also turns on \-f).
+.TP
+.B \-f
+force overwrite -- files with conflicting names will be overwritten.
+.TP
+.B \-h
+help  -- print a short list of command line flags.
+.TP
+.B \-i
+interactive mode -- the files will be individually listed with a 
+query as to whether they should be given.
+.TP
+.B \-l or \-\-list
+list the files you have given.  If 
+.I username
+is specified, restrict the list to files given to 
+.I name.
+.TP
+.B \-n
+like the -l option, except use a narrow list format.
+.TP
+.B \-q
+quiet mode -- fewer progress messages will be issed.
+.TP
+.B \-u 
+the "ungive" option -- if the intended recipient has not
+collected their files, the ungive option will delete them from the
+spool area.  If a file list is specified, as in "give \-u
+.I username
+file1 file2", only the files listed will be deleted.  If no file list is specified, as in "give \-u 
+.I username
+", the \-a option is implied and all files currently given to
+.I username
+are deleted.
+.TP
+.B \-\-version
+show programs version number, then exit.
+.TP
+
+In all cases,
+.B username
+is the username of the user to whom files have been given, and
+.B list
+is a list of 1 or more file names in the current directory.  
+
+Give is not capable of giving directories.
+
+
+
+
+.SH SEE ALSO
+
+take(1)

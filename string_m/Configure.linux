@@ -1,0 +1,82 @@
+#!/bin/sh
+#
+# Configure.linux shell script for STRING_M on LINUX.
+#
+# LC Security Technologies Group (STG) configure, build, test and 
+# installation shell script.
+#
+# $Header$
+#
+
+## ------------------------- ##
+## Set Environment Variables ##
+## ------------------------- ##
+
+# CC="gcc"
+# CFLAGS="-I/usr/local/include"
+# LDFLAGS="-L/usr/local/lib"
+# export CC CFLAGS LDFLAGS
+
+## -------------------- ##
+## Run Configure Script ##
+## -------------------- ##
+
+echo -n "Run 'configure'? (y/n) [n]: "
+read answer
+case "$answer" in
+  [yY]) 
+    echo "Running 'configure'"
+    ./configure
+    ;; 
+  *) 
+    echo "Skipping 'configure'"
+    ;; 
+esac 
+
+## ----- ##
+## Build ##
+## ----- ##
+
+echo -n "Run 'make'? (y/n) [n]: "
+read answer
+case "$answer" in
+  [yY]) 
+    echo "Running 'make'"
+    make
+    ;; 
+  *) 
+    echo "Skipping 'make'"
+    ;; 
+esac 
+
+## ---- ##
+## Test ##
+## ---- ##
+
+echo -n "Run 'make test'? (y/n) [n]: "
+read answer
+case "$answer" in
+  [yY]) 
+    echo "Running 'make test'"
+    make test
+    ;; 
+  *) 
+    echo "Skipping 'make test'"
+    ;; 
+esac 
+
+## ------- ##
+## Install ##
+## ------- ##
+
+echo -n "Run 'make install'? (y/n) [n]: "
+read answer
+case "$answer" in
+  [yY]) 
+    echo "Running 'make install'"
+    make install
+    ;; 
+  *) 
+    echo "Skipping 'make install'"
+    ;; 
+esac 

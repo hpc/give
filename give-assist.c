@@ -55,6 +55,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <dirent.h>
+#include <paths.h>
 
 #define SPOOL "/usr/give"
 /* IEEE Std 1003.1-2008 says (3.429), use portable filename character set (3.276) */
@@ -86,6 +87,8 @@ int main(int argc, char **argv)   {
 	struct passwd *giver_ent = NULL, *taker_ent = NULL;
 	char *taker_buf = NULL, *giver_buf = NULL;
 	struct passwd taker_s, giver_s;
+
+    sanitize_fds();
 
 	if (argc != 2) 
 		die_zs(GA_VERSION " usage: give-assist <taker_username>");
@@ -159,6 +162,39 @@ int main(int argc, char **argv)   {
 	if (debug)
 		emit("PATH = ", pathname, "\n");
 	exit(EXIT_SUCCESS);
+}
+
+static int open_devnull(int fd) {
+    FILE *f = 0;
+
+    if(!fd) {
+        f = freopen(_PATH_DEVNULL, "rb", stdin);
+    } else if(fd == 1) {
+        f = freopen(_PATH_DEVNULL, "wb", stdout);
+    } else if(fd == 2) {
+        f = freopen(_PATH_DEVNULL, "wb", stderr);
+    }
+
+    return (f && fileno(f) == fd);
+}
+
+void sanitize_fds(void) {
+    int fd, fds;
+    struct stat st;
+
+    if((fds = getdtablesize()) == -1) {
+        fds = 256;
+    }
+
+    for(fd = 3; fd < fds; fd++) {
+        close(fd);
+    }
+
+    for(fd = 0; fd < 3; fd++) {
+        if(fstat(fd, &st) == -1 && (errno != EBADF || !open_devnull(fd))) {
+            abort();
+        }
+    }
 }
 
 //

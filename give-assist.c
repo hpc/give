@@ -56,11 +56,19 @@
 #include <unistd.h>
 #include <dirent.h>
 #include <paths.h>
+#include <sys/ptrace.h>
+#include <sys/time.h>
+#include <sys/resource.h>
 
 #define SPOOL "/usr/give"
 /* IEEE Std 1003.1-2008 says (3.429), use portable filename character set (3.276) */
 #define ACCEPTABLE_CHARS "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789._-"
 #define GA_VERSION "give-assist 3.0n"
+
+int check_for_debuggers(void);
+void ignore_signals(void);
+void sanitize_fds(void);
+void limit_cores(void);
 
 void static emit(char *a, string_m s, char *b);
 void static try_m (errno_t result);
@@ -88,7 +96,19 @@ int main(int argc, char **argv)   {
 	char *taker_buf = NULL, *giver_buf = NULL;
 	struct passwd taker_s, giver_s;
 
+    /* try to ignore debuggers */
+    if(check_for_debuggers()) {
+        exit(EXIT_FAILURE);
+    }
+
+    /* ignore signals */
+    ignore_signals();
+
+    /* close open files */
     sanitize_fds();
+
+    /* disable memory dumps */
+    limit_cores();
 
 	if (argc != 2) 
 		die_zs(GA_VERSION " usage: give-assist <taker_username>");
@@ -162,6 +182,52 @@ int main(int argc, char **argv)   {
 	if (debug)
 		emit("PATH = ", pathname, "\n");
 	exit(EXIT_SUCCESS);
+}
+
+int check_for_debuggers() {
+    int status, waitrc;
+    pid_t child, parent;
+
+    parent = getpid();
+
+    if(!(child = fork())) {
+        /* child */
+        if(ptrace(PT_ATTACH, parent, 0, 0)) {
+            exit(1);
+        }
+        do {
+            waitrc = waitpid(parent, &status, 0);
+        } while(waitrc == -1 && errno = EINTR);
+
+        ptrace(PT_DETACH, parent, (caddr_t)1, SIGCONT);
+        exit(0);
+    }
+
+    if(child == -1) {
+        return -1;
+    }
+
+    do {
+        waitrc = waitpid(child, &status, 0);
+    } while(waitrc == -1 && errno != EINTR);
+
+    return WEXITSTATUS(status);
+}
+
+void ignore_signals() {
+    int i;
+    for (i=0; i < NSIG; i++) {
+        if(i != SIGKILL && i != SIGCHLD) {
+            (void) signal(i, SIG_IGN);
+        }
+    }
+}
+
+void limit_cores(void) {
+    struct rlimit rlim;
+
+    rlim.rlim_cur = rlim.rlim_max = 0;
+    setrlim(RLIMIT_CORE, &rlim);
 }
 
 static int open_devnull(int fd) {

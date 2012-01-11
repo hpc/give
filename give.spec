@@ -1,63 +1,51 @@
 Name: give
 Version: 3.0n
-Release: 2%{?dist}
+Release: 1
 Summary: lc file transfer utility
 License: LLNL Internal
 Group: System Environment/Base
-Source0: give-3.0n-2.tar.bz2
-BuildRoot: %{_tmppath}/%{name}-%{version}-root-%(%{__id_u} -n)
-Packager: Shawn Instenes <shawni@llnl.gov>
-
-%define debug_package %{nil}
+Source: %{name}-%{version}-%{release}.tgz                                       
+BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}                            
+URL: https://www.git.lanl.gov/filesystems/
 
 %description
-Give and take are a set of companion utilities that allow a 
-secure transfer of files form one user to another without exposing 
-the files to third parties.  
+Give and take are a set of companion utilities that allow a
+secure transfer of files form one user to another without exposing
+the files to third parties.
 
-%prep
-%setup -n give-3.0n-2
+# Don't strip binaries                                                             
+%define __os_install_post /usr/lib/rpm/brp-compress                                
+%define debug_package %{nil} 
 
-%build
-cd string_m
-make
-cd ..
-make
+###############################################################################
+
+%prep                                                                              
+%setup -n %{name}-%{version}-%{release}                                            
+                                                                                   
+%build                                                                             
+%configure --program-prefix=%{?_program_prefix:%{_program_prefix}}
+
+make %{?_smp_mflags}                                                               
 
 %install
+rm -rf "$RPM_BUILD_ROOT"                                                        
 mkdir -p $RPM_BUILD_ROOT%{_bindir}
-mkdir -p $RPM_BUILD_ROOT%{_mandir}/man1
-install give-assist $RPM_BUILD_ROOT%{_bindir}
-install give $RPM_BUILD_ROOT%{_bindir}
-install -m 644 give.1 $RPM_BUILD_ROOT%{_mandir}/man1
+install src/give-assist $RPM_BUILD_ROOT%{_bindir}
+install give.py $RPM_BUILD_ROOT%{_bindir}/give
 ln $RPM_BUILD_ROOT%{_bindir}/give $RPM_BUILD_ROOT%{_bindir}/take
-install -m 644 take.1 $RPM_BUILD_ROOT%{_mandir}/man1
+DESTDIR="$RPM_BUILD_ROOT" make install                                          
 
-%clean
+###############################################################################
+
+%clean                                                                          
 rm -rf $RPM_BUILD_ROOT
 
-%post
+###############################################################################
 
 %files
-%defattr(-,root,root)
-%attr(4555,root,root)%{_bindir}/give-assist
-%attr(0555,root,root)%{_bindir}/give
-%attr(0555,root,root)%{_bindir}/take
-%{_mandir}/man1/*
-
-%changelog
-* Tue Oct 26 2009 Trent D'Hooge <tdhooge@llnl.gov> 3.0-2
-  -  fix the two outstanding issues of auto-correcting the permissions 
-     of the give directories and touching the files copied into the give 
-     repository so they aren't prematurely reaped.
-
-* Tue Jun 2 2009 Trent D'Hooge <tdhooge@llnl.gov> 3.0-1
-  - goto new take 
-
-* Tue Jan 20 2009 Trent D'Hooge <tdhooge@llnl.gov> 3.0-0
-  - new code from Shawn Instenes <shawni@llnl.gov>
-  - old code for take
-  - new code for give
-
-* Mon Aug 21 2006 Jim Garlick <garlick@llnl.gov> 1.25b-1
-- Initial packaging attempt
+%defattr(-,root,root,0755)
+%{_bindir}/give-assist
+%{_bindir}/give
+%{_bindir}/take
+%{_mandir}/man1/give.1.gz
+%{_mandir}/man1/take.1.gz

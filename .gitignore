@@ -1,0 +1,6 @@
+*.o
+*.a
+/give
+/take
+/give-assist
+/string_m/test

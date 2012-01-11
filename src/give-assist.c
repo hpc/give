@@ -38,12 +38,6 @@
 // anything goes wrong.
 //
 
-// for dirfd()
-#define _BSD_SOURCE
-#ifdef _AIX
-#define dirfd(x)        (((struct _dirdesc *)(x))->dd_fd)
-#endif
-
 
 #include <stdio.h>
 #include <sys/param.h>
@@ -59,6 +53,14 @@
 #include <sys/ptrace.h>
 #include <sys/time.h>
 #include <sys/resource.h>
+#include <stdlib.h>
+#include <signal.h>
+#include <errno.h>
+#include <sys/wait.h>
+
+#ifndef __STDC_WANT_LIB_EXT1__
+#define __STDC_WANT_LIB_EXT1__
+#endif
 
 #define SPOOL "/usr/give"
 /* IEEE Std 1003.1-2008 says (3.429), use portable filename character set (3.276) */
@@ -201,12 +203,23 @@ int check_for_debuggers()
         /* child */
         if(ptrace(PT_ATTACH, parent, 0, 0)) {
             exit(1);
+
+
         }
 
         do {
             waitrc = waitpid(parent, &status, 0);
         }
-        while(waitrc == -1 && errno = EINTR);
+
+
+
+        while(
+
+
+waitrc == -1 );
+
+
+ //errno = EINTR);
 
         ptrace(PT_DETACH, parent, (caddr_t)1, SIGCONT);
         exit(0);
@@ -240,7 +253,7 @@ void limit_cores(void)
     struct rlimit rlim;
 
     rlim.rlim_cur = rlim.rlim_max = 0;
-    setrlim(RLIMIT_CORE, &rlim);
+    setrlimit(RLIMIT_CORE, &rlim);
 }
 
 static int open_devnull(int fd)

@@ -19,12 +19,6 @@
 
 #include <wchar.h>
 
-#ifdef _MSC_VER
-#else
-wchar_t *wcsdup(const wchar_t *str);
-char *strdup(const char *str);
-#endif
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>

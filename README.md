@@ -1,17 +1,8 @@
-
-README.stg file for give-ng.
-
-LC Security Technologies Group (STG) README file.
-
-See Configure.<os> shell script for configure, build, test and 
-install procedures.
-
-$Header: /cvs-root/stg/dev/give/README.stg,v 1.1.1.1 2007/09/13 20:59:57 shawni Exp $
-
+give
+====
 Give-ng is a reimplementation of our give and take programs, with careful
 consideration of security in mind.  A small suid give-assist program is
 used to remove all privilege from the "give" and "take" programs, which
 can now be implemented in any convienient language- even as shell scripts.
 
 Depends on the string_m library for secure string manipulation.
-

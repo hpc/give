@@ -1,6 +1,6 @@
 Name: give
 Version: 3.0n
-Release: 1
+Release: 2
 Summary: lc file transfer utility
 License: LLNL Internal
 Group: System Environment/Base

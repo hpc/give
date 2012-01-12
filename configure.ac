@@ -33,7 +33,7 @@ AC_FUNC_FORK
 AC_FUNC_LSTAT_FOLLOWS_SLASHED_SYMLINK
 AC_FUNC_MALLOC
 AC_FUNC_REALLOC
-AC_CHECK_FUNCS([memmove mkdir strchr strcspn strdup strspn strtoul])
+AC_CHECK_FUNCS([memmove mkdir strchr strcspn strdup strspn strtoul wcsdup])
 
 AC_CONFIG_FILES([ \
     Makefile               \

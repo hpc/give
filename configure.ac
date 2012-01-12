@@ -35,8 +35,6 @@ AC_FUNC_MALLOC
 AC_FUNC_REALLOC
 AC_CHECK_FUNCS([memmove mkdir strchr strcspn strdup strspn strtoul])
 
-# Various functions used through the codebase
-
 AC_CONFIG_FILES([ \
     Makefile               \
     src/Makefile           \

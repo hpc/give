@@ -38,6 +38,7 @@
 // anything goes wrong.
 //
 
+#include "../config.h"
 
 #include <stdio.h>
 #include <sys/param.h>
@@ -66,6 +67,11 @@
 /* IEEE Std 1003.1-2008 says (3.429), use portable filename character set (3.276) */
 #define ACCEPTABLE_CHARS "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789._-"
 #define GA_VERSION "give-assist 3.0n"
+
+#ifndef AC_CHECK_ALL_GIDS
+/* Only allow a user to be the only one in their group by default. */
+#define AC_CHECK_ALL_GIDS 0
+#endif
 
 int check_for_debuggers(void);
 void ignore_signals(void);
@@ -552,7 +558,10 @@ bool static taker_group_ok(struct passwd* t)
     if(debug)
         { printf("taker uname access group exists\n"); }
 
-    if(onlycontains(t->pw_name, access_grp->gr_mem)) {
+    if(debug && AC_CHECK_ALL_GIDS)
+        { printf("allow multiple groups for a user is enabled"); }
+
+    if(!AC_CHECK_ALL_GIDS && onlycontains(t->pw_name, access_grp->gr_mem)) {
         if(debug)
             { printf("taker is alone in uname group\n"); }
 

@@ -5,6 +5,7 @@ AC_DEFUN([X_AC_CHECK_ALL_GIDS], [
     AS_HELP_STRING(--enable-check-all-gids, check all gids for a match),
     [
       x_ac_check_all_gids=yes
+      AC_DEFINE([AC_CHECK_ALL_GIDS], 1, [Check all user GIDs for a match])
     ],
     [
       x_ac_check_all_gids=no

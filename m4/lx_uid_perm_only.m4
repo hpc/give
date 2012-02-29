@@ -5,6 +5,7 @@ AC_DEFUN([X_AC_UID_PERM_ONLY], [
     AS_HELP_STRING(--enable-uid-perm-only, only modify uid permissions),
     [
       x_ac_uid_perm_only=yes
+      AC_DEFINE([AC_UID_PERM_ONLY], 1, [Only modify UID permissions])
     ],
     [
       x_ac_uid_perm_only=no

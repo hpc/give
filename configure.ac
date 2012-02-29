@@ -35,6 +35,26 @@ AC_FUNC_MALLOC
 AC_FUNC_REALLOC
 AC_CHECK_FUNCS([memmove mkdir strchr strcspn strdup strspn strtoul wcsdup])
 
+# Check all GIDs for a match instead of just the first one.
+X_AC_CHECK_ALL_GIDS
+
+# Check to see if we should only modify the UID permissions.
+X_AC_UID_PERM_ONLY
+
+# Allow specifying the give directory.
+X_AC_SET_GIVEDIR
+
+echo
+echo "========================================================"
+echo "==          give: final build configuration           =="
+echo "========================================================"
+echo "Build Options:"
+echo "  Only modify UID permissions ................. $x_ac_uid_perm_only"
+echo "  Check all user GIDs ......................... $x_ac_check_all_gids"
+echo "  Using give dir location ..................... $x_ac_with_give_dir"
+echo "========================================================"
+echo
+
 AC_CONFIG_FILES([ \
     Makefile               \
     src/Makefile           \

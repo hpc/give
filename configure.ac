@@ -51,7 +51,7 @@ echo "========================================================"
 echo "Build Options:"
 echo "  Only modify UID permissions ................. $x_ac_uid_perm_only"
 echo "  Check all user GIDs ......................... $x_ac_check_all_gids"
-echo "  Using give dir location ..................... $x_ac_with_give_dir"
+echo "  Using give dir location ..................... $x_ac_give_dir"
 echo "========================================================"
 echo
 

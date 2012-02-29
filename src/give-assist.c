@@ -58,15 +58,20 @@
 #include <signal.h>
 #include <errno.h>
 #include <sys/wait.h>
+#include <wchar.h>
 
 #ifndef __STDC_WANT_LIB_EXT1__
 #define __STDC_WANT_LIB_EXT1__
 #endif
 
-#define SPOOL "/usr/give"
 /* IEEE Std 1003.1-2008 says (3.429), use portable filename character set (3.276) */
 #define ACCEPTABLE_CHARS "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789._-"
 #define GA_VERSION "give-assist 3.0n"
+
+/* Set a default spool directory if autotools doesn't set one. */
+#ifndef AC_SPOOL_DIRECTORY
+#define AC_SPOOL_DIRECTORY "/usr/give"
+#endif
 
 #ifndef AC_CHECK_ALL_GIDS
 /* Only allow a user to be the only one in their group by default. */
@@ -78,19 +83,19 @@ void ignore_signals(void);
 void sanitize_fds(void);
 void limit_cores(void);
 
-void static emit(char* a, string_m s, char* b);
-void static try_m(errno_t result);
-void static try_err(errno_t result, char* err);
-void static safe_mkdir_m(string_m s, mode_t mode, uid_t u, gid_t g);
-void static die_m(char* a, string_m s, char* b);
-void static die_err_zs(char* zs, errno_t err);
-void static die_2zs(char* a, char* b);
-void static die_zs(char* zs);
-bool static gt_access_ok(struct passwd* g, struct passwd* t);
-bool static give_spool_ok(char* spooldir);
-bool static taker_group_ok(struct passwd* t);
+static void emit(char* a, string_m s, char* b);
+static void try_m(errno_t result);
+static void try_err(errno_t result, char* err);
+static void safe_mkdir_m(string_m s, mode_t mode, uid_t u, gid_t g);
+static void die_m(char* a, string_m s, char* b);
+static void die_err_zs(char* zs, errno_t err);
+static void die_2zs(char* a, char* b);
+static void die_zs(char* zs);
+static bool gt_access_ok(struct passwd* g, struct passwd* t);
+static bool give_spool_ok(char* spooldir);
+static bool taker_group_ok(struct passwd* t);
 
-const static bool debug = false;
+static const bool debug = false;
 
 int main(int argc, char** argv)
 {
@@ -174,13 +179,13 @@ int main(int argc, char** argv)
         printf("ok taker: %s\n", taker_ent->pw_name);
     }
 
-    if(!give_spool_ok(SPOOL)) {
+    if(!give_spool_ok(AC_SPOOL_DIRECTORY)) {
         // this shouldn't happen- if it returns at all it's good.
         die_zs("give_spool_ok() returned zero");
     }
 
     // these may fail on malloc() but otherwise no.
-    try_m(strcreate_m(&pathname, SPOOL, 0, NULL));
+    try_m(strcreate_m(&pathname, AC_SPOOL_DIRECTORY, 0, NULL));
     try_m(cstrcat_m(pathname, "/"));
     try_m(cstrcat_m(pathname, taker_ent->pw_name));
     (void) umask((mode_t) 0); // we will be setting exact mkdir/chmod perms.
@@ -302,7 +307,7 @@ void sanitize_fds(void)
 //
 // emit()- print a managed string, possibly with fore & after
 //
-void static emit(char* a, string_m s, char* b)
+static void emit(char* a, string_m s, char* b)
 {
     char* out = NULL;
 
@@ -325,7 +330,7 @@ void static emit(char* a, string_m s, char* b)
 // the topmost directory should be owned by root and writable only
 // by root.
 //
-void static safe_mkdir_m(string_m s, mode_t mode, uid_t u, gid_t g)
+static void safe_mkdir_m(string_m s, mode_t mode, uid_t u, gid_t g)
 {
     DIR* dir;
     int result = 0, fd = 0;
@@ -401,7 +406,7 @@ void static safe_mkdir_m(string_m s, mode_t mode, uid_t u, gid_t g)
 //
 // scanfor()- see if zs-string "s" is in a[] anywhere.
 //
-bool static scanfor(char* s, char** a)
+static bool scanfor(char* s, char** a)
 {
     bool wasfound = false;
     int i = 0;
@@ -428,7 +433,7 @@ bool static scanfor(char* s, char** a)
 //
 // onlycontains()- see if zs-string "s" is the only string in a[].
 //
-bool static onlycontains(char* s, char** a)
+static bool onlycontains(char* s, char** a)
 {
     bool wasfound = true;
     int i = 0;
@@ -464,7 +469,7 @@ bool static onlycontains(char* s, char** a)
 // spool directory were otherwise writable by someone other than root.
 //
 
-bool static give_spool_ok(char* spooldir)
+static bool give_spool_ok(char* spooldir)
 {
     struct stat buf;
 
@@ -490,7 +495,7 @@ bool static give_spool_ok(char* spooldir)
 // If a group named "gt-<taker-uid-in-decimal>" exists, then the giver must be a member
 // or the operation will be denied.  If the group does not exist then the operation is OK.
 //
-bool static gt_access_ok(struct passwd* g, struct passwd* t)
+static bool gt_access_ok(struct passwd* g, struct passwd* t)
 {
     struct group* access_grp = NULL;
     string_m s = NULL, fmt = NULL;
@@ -534,7 +539,7 @@ bool static gt_access_ok(struct passwd* g, struct passwd* t)
 // taker_group_ok()- determine if taker's group only has one (or no) members
 //
 //
-bool static taker_group_ok(struct passwd* t)
+static bool taker_group_ok(struct passwd* t)
 {
     struct group* access_grp = NULL;
     string_m s = NULL;
@@ -577,7 +582,7 @@ bool static taker_group_ok(struct passwd* t)
 //
 // try_m()- abort program if any managed string assertion fails.
 //
-void static try_m(errno_t result)
+static void try_m(errno_t result)
 {
     if((int)result != 0) { die_err_zs("generic error, errno", result); }
 }
@@ -586,7 +591,7 @@ void static try_m(errno_t result)
 // try_err()- abort program if any managed string assertion fails,
 //   include error.
 //
-void static try_err(errno_t result, char* err)
+static void try_err(errno_t result, char* err)
 {
     if((int)result != 0) { die_zs(err); }
 }
@@ -594,7 +599,7 @@ void static try_err(errno_t result, char* err)
 //
 // Complain and exit.
 //
-void static die_m(char* a, string_m s, char* b)
+static void die_m(char* a, string_m s, char* b)
 {
     char* out = NULL;
 
@@ -609,7 +614,7 @@ void static die_m(char* a, string_m s, char* b)
     exit(EXIT_FAILURE);
 }
 
-void static die_err_zs(char* zs, errno_t err)
+static void die_err_zs(char* zs, errno_t err)
 {
     if(zs != NULL) {
         fprintf(stderr, "%s: %d\n", zs, err);
@@ -618,7 +623,7 @@ void static die_err_zs(char* zs, errno_t err)
     exit(EXIT_FAILURE);
 }
 
-void static die_2zs(char* a, char* b)
+static void die_2zs(char* a, char* b)
 {
     if(a != NULL) {
         fprintf(stderr, "%s ", a);
@@ -631,7 +636,7 @@ void static die_2zs(char* a, char* b)
     exit(EXIT_FAILURE);
 }
 
-void static die_zs(char* zs)
+static void die_zs(char* zs)
 {
     if(zs != NULL) {
         fprintf(stderr, "%s\n", zs);

@@ -11,5 +11,5 @@ AC_DEFUN([X_AC_SET_GIVEDIR], [
     ]
   )
   AC_MSG_RESULT($x_ac_give_dir)
-  AC_DEFINE_UNQUOTED([AC_SPOOL_DIRECTORY], $x_ac_give_dir, [The location to use])
+  AC_DEFINE_UNQUOTED([AC_SPOOL_DIRECTORY], "$x_ac_give_dir", [The location to use])
 ])

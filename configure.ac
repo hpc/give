@@ -39,7 +39,7 @@ AC_CHECK_FUNCS([memmove mkdir strchr strcspn strdup strspn strtoul wcsdup])
 X_AC_CHECK_ALL_GIDS
 
 # Check to see if we should only modify the UID permissions.
-X_AC_UID_PERM_ONLY
+X_AC_SPECIFY_GID
 
 # Allow specifying the give directory.
 X_AC_SET_GIVEDIR
@@ -49,8 +49,8 @@ echo "========================================================"
 echo "==          give: final build configuration           =="
 echo "========================================================"
 echo "Build Options:"
-echo "  Only modify UID permissions ................. $x_ac_uid_perm_only"
 echo "  Check all user GIDs ......................... $x_ac_check_all_gids"
+echo "  Use specific GID ............................ $x_ac_specify_gid"
 echo "  Using give dir location ..................... $x_ac_give_dir"
 echo "========================================================"
 echo

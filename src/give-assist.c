@@ -78,6 +78,11 @@
 #define AC_CHECK_ALL_GIDS 0
 #endif
 
+#ifndef AC_UID_PERM_ONLY
+/* Change the UID and GID when transfering a file by default. */
+#define AC_UID_PERM_ONLY 0
+#endif
+
 int check_for_debuggers(void);
 void ignore_signals(void);
 void sanitize_fds(void);
@@ -190,12 +195,20 @@ int main(int argc, char** argv)
     try_m(cstrcat_m(pathname, taker_ent->pw_name));
     (void) umask((mode_t) 0); // we will be setting exact mkdir/chmod perms.
     // make this directory, chown
+#ifdef AC_SPECIFIC_GID
+    safe_mkdir_m(pathname, 0711, taker_ent->pw_uid, AC_SPECIFIC_GID);
+#elif
     safe_mkdir_m(pathname, 0711, taker_ent->pw_uid, taker_ent->pw_gid);
+#endif
     // build 2nd level directory, again malloc() may fail
     try_m(cstrcat_m(pathname, "/"));
     try_m(cstrcat_m(pathname, giver_ent->pw_name));
     // make this directory, chown
+#ifdef AC_SPECIFIC_GID
+    safe_mkdir_m(pathname, 0770, giver_ent->pw_uid, AC_SPECIFIC_GID);
+#elif
     safe_mkdir_m(pathname, 0770, giver_ent->pw_uid, taker_ent->pw_gid);
+#endif
 
     if(debug)
         { emit("PATH = ", pathname, "\n"); }
@@ -387,7 +400,11 @@ static void safe_mkdir_m(string_m s, mode_t mode, uid_t u, gid_t g)
         }
     }
 
+#ifdef AC_SPECIFIC_GID
+    result = fchown(fd, u, AC_SPECIFIC_GID);
+#elif
     result = fchown(fd, u, g);
+#endif
 
     if(result != 0) {
         die_err_zs("error chowning directory", errno);

@@ -43,7 +43,7 @@ except:
 
 
 VERSION="%prog 3.0n"
-SPOOL="/usr/give"
+SPOOL="/net/givedir"
 ASSIST="/usr/bin/give-assist"
 COPY="/bin/cp"
 TOUCH="/bin/touch"

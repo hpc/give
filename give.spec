@@ -17,13 +17,23 @@ the files to third parties.
 %define __os_install_post /usr/lib/rpm/brp-compress                                
 %define debug_package %{nil} 
 
+# Check for configure options
+%define give_with_opt() %{expand:%%{!?_without_%{1}:%%global give_with_%{1} 1}}
+
+%give_with_opt check_all_gids
+%give_with_opt use_special_gid
+%give_with_opt alternate_dir
+
 ###############################################################################
 
 %prep                                                                              
 %setup -n %{name}-%{version}-%{release}                                            
                                                                                    
 %build                                                                             
-%configure --program-prefix=%{?_program_prefix:%{_program_prefix}}
+%configure --program-prefix=%{?_program_prefix:%{_program_prefix}} \
+    %{?give_with_check_all_gids:--enable-check-all-gids} \
+    %{?give_with_use_special_gid:--enable-use-gid=100} \
+    %{?give_with_alternate_dir:--enable-give-dir=/net/givedir}
 
 make %{?_smp_mflags}                                                               
 

@@ -580,18 +580,26 @@ static bool taker_group_ok(struct passwd* t)
     if(debug)
         { printf("taker uname access group exists\n"); }
 
-    if(debug && AC_CHECK_ALL_GIDS)
-        { printf("allow multiple groups for a user is enabled"); }
 
-    if(!AC_CHECK_ALL_GIDS && onlycontains(t->pw_name, access_grp->gr_mem)) {
-        if(debug)
-            { printf("taker is alone in uname group\n"); }
+    if(AC_CHECK_ALL_GIDS) {
+        if(debug) {
+            printf("allow multiple groups for a user is enabled");
+        }
 
         return (true);
     }
 
-    if(debug)
-        { printf("taker is NOT alone in uname group\n"); }
+    if(onlycontains(t->pw_name, access_grp->gr_mem)) {
+        if(debug) {
+            printf("taker is alone in uname group\n");
+        }
+
+        return (true);
+    }
+
+    if(debug) {
+        printf("taker is NOT alone in uname group\n");
+    }
 
     return (false);
 }

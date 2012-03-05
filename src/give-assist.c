@@ -197,7 +197,7 @@ int main(int argc, char** argv)
     // make this directory, chown
 #ifdef AC_SPECIFIC_GID
     safe_mkdir_m(pathname, 0711, taker_ent->pw_uid, AC_SPECIFIC_GID);
-#elif
+#else
     safe_mkdir_m(pathname, 0711, taker_ent->pw_uid, taker_ent->pw_gid);
 #endif
     // build 2nd level directory, again malloc() may fail
@@ -206,7 +206,7 @@ int main(int argc, char** argv)
     // make this directory, chown
 #ifdef AC_SPECIFIC_GID
     safe_mkdir_m(pathname, 0770, giver_ent->pw_uid, AC_SPECIFIC_GID);
-#elif
+#else
     safe_mkdir_m(pathname, 0770, giver_ent->pw_uid, taker_ent->pw_gid);
 #endif
 
@@ -402,7 +402,7 @@ static void safe_mkdir_m(string_m s, mode_t mode, uid_t u, gid_t g)
 
 #ifdef AC_SPECIFIC_GID
     result = fchown(fd, u, AC_SPECIFIC_GID);
-#elif
+#else
     result = fchown(fd, u, g);
 #endif
 

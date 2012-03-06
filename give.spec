@@ -1,6 +1,6 @@
 Name: give
 Version: 3.0n_ptools
-Release: 4
+Release: 5
 Summary: lc file transfer utility (LANL Build of 3.0n-2)
 License: LLNL Internal
 Group: System Environment/Base
@@ -12,6 +12,8 @@ URL: https://www.git.lanl.gov/filesystems/give
 Give and take are a set of companion utilities that allow a
 secure transfer of files form one user to another without exposing
 the files to third parties.
+Fix give-assist permissions;
+Modify group checking strictness for LANL environment;
 
 # Don't strip binaries                                                             
 %define __os_install_post /usr/lib/rpm/brp-compress                                

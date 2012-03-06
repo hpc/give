@@ -19,9 +19,10 @@ the files to third parties.
 
 # Check for configure options
 %define give_with_opt() %{expand:%%{!?_without_%{1}:%%global give_with_%{1} 1}}
+%define give_without_opt() %{expand:%%{?_with_%{1}:%%global give_with_%{1} 1}}
 
 %give_with_opt check_all_gids
-%give_with_opt use_special_gid
+%give_without_opt use_special_gid
 %give_with_opt alternate_dir
 
 ###############################################################################

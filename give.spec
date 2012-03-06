@@ -55,7 +55,7 @@ rm -rf $RPM_BUILD_ROOT
 
 %files
 %defattr(-,root,root,0755)
-%{_bindir}/give-assist
+%attr(4555, -, root) %{_bindir}/give-assist
 %{_bindir}/give
 %{_bindir}/take
 %{_mandir}/man1/give.1.gz

@@ -1,12 +1,12 @@
 Name: give
-Version: 3.0n
-Release: 2
-Summary: lc file transfer utility
+Version: 3.0n-ptools
+Release: 4
+Summary: lc file transfer utility (LANL Build of 3.0n-2)
 License: LLNL Internal
 Group: System Environment/Base
 Source: %{name}-%{version}-%{release}.tgz                                       
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}                            
-URL: https://www.git.lanl.gov/filesystems/
+URL: https://www.git.lanl.gov/filesystems/give
 
 %description
 Give and take are a set of companion utilities that allow a

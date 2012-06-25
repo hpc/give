@@ -396,8 +396,9 @@ def validate_transaction (giver_uname, taker_uname):
 		for x in grp_ent.gr_mem:
 			if x != t_ent.pw_name:
 				isvalid = False # taker must be the only member of their group
-				print "Taker's default group is not set up correctly, they must be the only member of their default group."
-				return isvalid
+				#print "Taker's default group is not set up correctly, they must be the only member of their default group."
+				#return isvalid
+				return True # LANL's environment allows a user to be in a different group.
 	except:
 		print "Taker must have a valid group"
 		isvalid = False # group must exist

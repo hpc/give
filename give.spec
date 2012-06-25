@@ -1,6 +1,6 @@
 Name: give
 Version: 3.0n_ptools
-Release: 5
+Release: 6
 Summary: lc file transfer utility (LANL Build of 3.0n-2)
 License: LLNL Internal
 Group: System Environment/Base

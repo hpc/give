@@ -1,0 +1,52 @@
+.\" give.1 -- 
+.TH GIVE 1 "20 May 2010" 
+.SH NAME
+take -- transfer files between users
+.SH SYNOPSIS
+.B take -n [username]
+.br
+.B take -l [username]
+.br
+.B take [-i] [-f]  username [list]
+.SH DESCRIPTION
+
+.B take
+is the other half of the give/take pair of utilites.  It allows the 
+user to collect files "given" to them by another user.  Files are 
+copied from the spool directories to the current working directory, 
+and ownership is changed to the user running take.
+
+Certain users may be limited to take files only from specific givers. 
+For these users, files may only be taken from givers who are members 
+of the gt-<uid> group where uid is the UNIX id of the limited user.
+
+.SH OPTIONS
+
+.TP
+.B \-n
+list files that can be taken; if
+.B username
+is specified, only list files from that user.
+
+.TP
+.B \-l
+As -n, except use a long list format.
+.TP
+.B \-i
+interactive query mode.
+.TP
+.B \-f
+force overwrite of files with conflicting names
+
+If
+.B list
+is specified, then the specified files will be transfered.
+
+In all cases, 
+.B username
+is the username of the user that gave the files away.
+
+
+.SH SEE ALSO
+
+give(1)

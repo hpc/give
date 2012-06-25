@@ -1,0 +1,31 @@
+
+INSTALLATION OF GIVE / TAKE
+---------------------------
+
+Because of varying requirements on different platforms, give/take is
+distributed in source form only.  The following steps must be performed:
+
+  1. Edit Makefile:
+    - Verify / set correct values for the following:
+       INSTALL_DIR  : directory where to install 'give' and 'take' binaries
+       GIVE_SPOOL   : path where give will spool files until taken
+       GIVE_GRP     : name of system group (usually bin) that owns GIVE_SPOOL
+       GIVE_GID     : group ID corresponding to GIVE_GRP
+
+    - Uncomment the correct option for CC (comment out the incorrect one)
+
+    - On Tru64 machines, uncomment the following line:
+       CFLAGS = -D_XOPEN_SOURCE_EXTENDED
+
+  2. Compile:
+    - Type 'make'
+
+  3. Install:
+    - Type 'make install'
+    - If spool directory does not already exist, run 'make create' to create it
+
+  4. Validate proper operation and check testplan
+
+
+----
+This file last modified: Apr 18 13:22:36 PDT 2002 by Peter Balland

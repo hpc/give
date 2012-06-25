@@ -1,0 +1,5 @@
+KPURL=https://eris.llnl.gov/svn/chaos/private/give
+# svn copy $KPURL/trunk $KPURL/tags/give-3.0-0
+# svn delete $KPURL/tags/give-3.0-0
+# build -s $KPURL/tags/give-3.0-0
+# build -s $KPURL/tags/tagname -d

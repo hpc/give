@@ -6,7 +6,8 @@ Currently in development!
 -------------------------
 This tool is currently undergoing significant modifications. Please do NOT
 depend on this version of the give program in any production environment if
-you care about security.
+you care about security. This codebase is a starting point that we intend to
+significantly update.
 
 How does it work?
 -----------------

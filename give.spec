@@ -1,19 +1,16 @@
 Name: give
-Version: 3.0n_ptools
-Release: 6
-Summary: lc file transfer utility (LANL Build of 3.0n-2)
-License: LLNL Internal
+Version: 3.2
+Release: 0
+Summary: User to user file transfer utility.
+License: GPLv2
 Group: System Environment/Base
-Source: %{name}-%{version}-%{release}.tgz                                       
-BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}                            
-URL: https://www.git.lanl.gov/filesystems/give
+Source: %{name}-%{version}.tar.gz
+BuildRoot: %{_tmppath}/%{name}-%{version}
+URL: http://github.com/hpc/give
 
 %description
-Give and take are a set of companion utilities that allow a
-secure transfer of files form one user to another without exposing
-the files to third parties.
-Fix give-assist permissions;
-Modify group checking strictness for LANL environment;
+Give and take are a set of companion utilities that allow a secure transfer
+of files form one user to another without exposing the files to third parties.
 
 # Don't strip binaries                                                             
 %define __os_install_post /usr/lib/rpm/brp-compress                                
@@ -30,7 +27,7 @@ Modify group checking strictness for LANL environment;
 ###############################################################################
 
 %prep                                                                              
-%setup -n %{name}-%{version}-%{release}                                            
+%setup -n %{name}-%{version}
                                                                                    
 %build                                                                             
 %configure --program-prefix=%{?_program_prefix:%{_program_prefix}} \

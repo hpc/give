@@ -1,10 +1,12 @@
-AC_INIT([give],[3.0],[github-hpc@lanl.gov],[give],[https://www.git.lanl.gov/filesystems/give])
+AC_INIT([give],[3.2.0],[github-hpc@lanl.gov],[give],[http://github.com/hpc/give])
 
 # Keep artifacts in directories as much as possible.
 AC_CONFIG_AUX_DIR(auxdir)
 AC_CONFIG_MACRO_DIR([m4])
 
 AM_INIT_AUTOMAKE([-Wall no-define])
+m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
+
 AC_CONFIG_HEADERS([config.h])
 
 # Check for compilers.
@@ -15,7 +17,7 @@ AC_PROG_CXX
 # Pull in libtool. We need to support ancient autotools, so don't use LT_INIT.
 #LT_INIT
 AC_PROG_RANLIB
-AC_PROG_LIBTOOL
+LT_INIT
 
 # Checks for header files.
 AC_CHECK_HEADERS([limits.h paths.h stdint.h stdlib.h string.h sys/param.h sys/time.h unistd.h wchar.h wctype.h])

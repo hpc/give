@@ -1,0 +1,35 @@
+GIVE/TAKE -- updated 07-2012
+
+original author: Shawn Instenes
+
+latest modifications: Dominic Manno <dmanno@lanl.gov>  07-2012
+
+Description:
+Giveng is a reimplementation of our give and take programs, with careful consideration of security in mind. 
+A small suid give-assist program is used to remove all privilege from the "give" and "take" programs, 
+which can now be implemented in any convienient language- even as shell scripts.
+
+Depends on the string_m library for secure string manipulation.
+
+give and take are a set of companion utilities that allow a
+secure transfer of files from one user to another without exposing
+the files to third parties.
+
+The named files are copied to a spool area where they can be
+retrieved by the user running the "take" program.  Ownership of the
+files remains with the giver until they are taken, and will count
+against any file system quotas imposed on the giver.
+
+Certain users may be limited to take files only from specific
+givers.  For these users, files may only be taken from givers
+who are members of the gt-<uid> group where uid is the UNIX id
+of the limited user. [NOTE: This is only implemented on LLNL's environment,
+it SHOULD NOT bother you if you are a LANL user]
+
+the current design is to: "give user file" or "take user file"
+
+If you'd like detailed code documenatation access the html folder for doxygen generated docs, this will 
+be useful for a general idea of what the code is doing...same comments are in the code itself.
+
+see INSTALL file for configuration and installation instructions.
+

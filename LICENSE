@@ -1,4 +1,5 @@
 Copyright 2012. Lawrence Livermore National Security, LLC.
+Copyright 2013. Los Alamos National Security, LLC.
 
 This material was produced for Lawrence Livermore National Laboratory (LLNL),
 which is operated by Lawrence Livermore National Security, LLC for the U.S.
@@ -8,6 +9,15 @@ NATIONAL SECURITY, LLC MAKES ANY WARRANTY, EXPRESS OR IMPLIED, OR ASSUMES ANY
 LIABILITY FOR THE USE OF THIS SOFTWARE. If software is modified to produce
 derivative works, such modified software should be clearly marked, so as not
 to confuse it with the version available from LLNL.
+
+This program was also prepared by Los Alamos National Security, LLC at Los
+Alamos National Laboratory (LANL) under contract No. DE-AC52-06NA25396 with
+the U.S. Department of Energy (DOE). All rights in the program are reserved by
+the DOE and Los Alamos National Security, LLC. Permission is granted to the
+public to copy and use this software without charge, provided that this Notice
+and any statement of authorship are reproduced on all copies. Neither the U.S.
+Government nor LANS makes any warranty, express or implied, or assumes any
+liability or responsibility for the use of this software.
 
 Additionally, this program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License as published by

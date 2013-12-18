@@ -1,68 +1,70 @@
-AC_INIT([give],[3.2.0],[github-hpc@lanl.gov],[give],[http://github.com/hpc/give])
+#                                               -*- Autoconf -*-
+# Process this file with autoconf to produce a configure script.
 
-# Keep artifacts in directories as much as possible.
-AC_CONFIG_AUX_DIR(auxdir)
+AC_PREREQ(2.59)
+AC_INIT([give],[3.1],[github-hpc@lanl.gov],[give],[https://www.git.lanl.gov/filesystems/give])
+
+AC_CONFIG_AUX_DIR([auxdir])
 AC_CONFIG_MACRO_DIR([m4])
 
+m4_include([m4/lx_set_givedir.m4])
+m4_include([m4/lx_set_strict_checks.m4])
+
 AM_INIT_AUTOMAKE([-Wall no-define])
-m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
 
-AC_CONFIG_HEADERS([config.h])
+AC_CONFIG_SRCDIR([give-assist.c])
+AC_CONFIG_HEADER([config.h])
 
-# Check for compilers.
+# Checks for programs.
 AC_PROG_CC
-AM_PROG_CC_C_O
+AC_PROG_CC_C_O
 AC_PROG_CXX
 
-# Pull in libtool. We need to support ancient autotools, so don't use LT_INIT.
-#LT_INIT
 AC_PROG_RANLIB
-LT_INIT
+AC_PROG_LIBTOOL
 
 # Checks for header files.
+AC_HEADER_DIRENT
+AC_HEADER_STDC
+AC_HEADER_SYS_WAIT
 AC_CHECK_HEADERS([limits.h paths.h stdint.h stdlib.h string.h sys/param.h sys/time.h unistd.h wchar.h wctype.h])
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_HEADER_STDBOOL
+AC_C_CONST
 AC_TYPE_UID_T
 AC_TYPE_MODE_T
 AC_TYPE_PID_T
 AC_TYPE_SIZE_T
 
 # Checks for library functions.
-AC_FUNC_CHOWN
+AC_FUNC_CLOSEDIR_VOID
 AC_FUNC_FORK
+AC_FUNC_LSTAT
 AC_FUNC_LSTAT_FOLLOWS_SLASHED_SYMLINK
 AC_FUNC_MALLOC
 AC_FUNC_REALLOC
-AC_CHECK_FUNCS([memmove mkdir strchr strcspn strdup strspn strtoul wcsdup])
+AC_TYPE_SIGNAL
+AC_FUNC_STAT
+AC_CHECK_FUNCS([memmove mkdir strchr strcspn strdup strspn strtoul])
 
-# Check all GIDs for a match instead of just the first one.
-X_AC_CHECK_ALL_GIDS
-
-# Check to see if we should only modify the UID permissions.
-X_AC_SPECIFY_GID
-
-# Allow specifying the give directory.
+#set a givedir, if none set, /usr/givedir is used
 X_AC_SET_GIVEDIR
+
+#set strict checking (uid == default gid)
+X_AC_SET_STRICT_CHECKS
 
 echo
 echo "========================================================"
 echo "==          give: final build configuration           =="
 echo "========================================================"
 echo "Build Options:"
-echo "  Check all user GIDs ......................... $x_ac_check_all_gids"
-echo "  Use specific GID ............................ $x_ac_specify_gid"
-echo "  Using give dir location ..................... $x_ac_give_dir"
+echo "  Strict checking ............................. $x_ac_set_strict_checks"
+echo "  Using give dir location ..................... $x_ac_givedir"
 echo "========================================================"
 echo
 
-AC_CONFIG_FILES([ \
-    Makefile               \
-    src/Makefile           \
-    src/string_m/Makefile  \
-    doc/Makefile           \
-    doc/man/Makefile
+AC_CONFIG_FILES([Makefile
+                 give.py
 ])
-
 AC_OUTPUT

@@ -1,24 +1,68 @@
-Installation of give and take
-=============================
+Installation of 'give' and 'take'
+===============================================================================================================================================================================================================
 
-First, somehow edit the GIVE_SPOOL, GIVE_GRP, and GIVE_GID variables before
-building. I'm not sure what the instructions for this are yet.
+Manual Install:
 
-You also need to make sure the spool directory is created. How this is this
-done you may ask? I don't know yet. :-)
+	$ git clone git@git.lanl.gov:filesystems/give.git give-3.1-1 ****DON'T DO THIS YET, GITHUB HASN'T HAD THE NEW CODE PUSHED ONTO IT. IF YOU'RE READING THIS YOU HAVE THE CODE ALREADY ANYWAY :)	
+	
+	untar the downloaded package into the proper directory, name the "untared": give-3.1-1
+	$ cd give-3.1-1
+	$ ./configure [option1] [option2...]
+	Edit Makefile: change bindir and mandir/man1 to match your directory structure
+	also add the line, add this a line above chmod 4555: chown root:root give-assist (otherwise you will need to manually chown after installation)
+	$ sudo make
+	$ sudo make install
 
-You can go ahead and build an RPM with the following commands:
+this will configure and install 'give' with basic options. There are two options that will 'effect' give at configure time:
 
-$ git clone git@git.lanl.gov:filesystems/give.git give-3.0n-1
-$ tar -zcf give-3.0n-1.tgz give-3.0n-1
-$ rpmbuild -ta give-3.0n-1.tgz
+	--enable-non-strict-checks..............this will cause give to stop checking that uid == default gid...........default: strict checks on
+	--enable-givedir=DIR....................this will enable you to setup the proper givedir for your system........default: /usr/givedir
 
-After installation of the rpm, you must manually go and modify the give-assist
-program by ensuring the owner is root and the suid bit is set. This can be
-done with the following commands:
+	***the directory you provide as DIR must exist, be owned by root, and be mode 0755. If those conditions aren't met 'give' will complain and quit.
+
+the layout for this would be:
+	$ ./configure --enable-non-strict-checks --enable-givedir=DIR
+
+if no option(s) are passed to ./configure, the defaults are used. 
+You can also run: $ ./configure --help for more info.
+
+===============================================================================================================================================================================================================
+
+
+RPM Build process:
+
+The RPM has a few options to take into consideration:
+
+	--define "strict_checks no".................turns strict checks off, the default has strict checking set to yes. This options only takes in: no, No, or NO. If you want strict checks on, don't define it. It's set on by default.
+	--define "alt_givedir /my/givedir/".........allows you to set your own givedir location. Default is set to /usr/givedir
+
+	***the directory you provide as DIR must exist, be owned by root, and be mode 0755. If those conditions aren't met 'give' will complain and quit.
+
+	build with no options:
+
+		from a tar:	rpmbuild -ta give-3.1-1.tgz
+		
+		from a spec:	rpmbuild -ba path_to_spec_file/give.spec
+
+	build with non-strict checks only:
+
+		from a tar:	rpmbuild -ta give-3.1-1.tgz --define "strict_checks no"
+		
+		from a spec:	rpmbuild -ba path_to_spec_file/give.spec --define "strict_checks no"
+
+	with both options:
+
+		from a tar:	rpmbuild -ta give-3.1-1.tgz --define "alt_givedir /desired/givedir" --define "strict_checks no"
+		
+		from a spec:	rpmbuild -ba path_to_spec_file/give.spec --define "alt_givedir /desired/givedir" --define "strict_checks no"
+
+===============================================================================================================================================================================================================
+
+However you decide to install, be sure to check the give-assist file perms to ensure the owner is root and the suid bit is set. 
+If the perms are wrong, they can be changed to the proper perms with the following commands:
 
 $ chown root:root <location of give-assist binary>
-$ chmod 4755 <location of give-assist binary>
+$ chmod 4555 <location of give-assist binary>
 
-Finally, you should validate proper operation and check it against your test
-and security plans.
+
+Finally, you should validate proper operation and check it against your test and security plans.

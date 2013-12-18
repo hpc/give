@@ -1,59 +1,80 @@
 #!/usr/bin/env python
+
+##
+#	@file give.py
 #
-# give/take: securely offer files to another user
+#	give/take: securely offer files to another user
 #
-# Last modified: 2010-05-20 Shawn Instenes <shawni@llnl.gov>
+#	2010-05-20 Shawn Instenes <shawni@llnl.gov>
+#	last modified 2012-07 Dominic Manno <dmanno@lanl.gov>
 #
-# Work flow:
+#	@author: Shawn Instenes 
+#	@author: Trent D'Hooge  
+#	@author: Jim Garlick 
+#	@author: Jon Bringhurst
+#	@author: Dominic Manno
+#	@author: Ryan Day
 #
-# Validate args: giver, taker, gt-<taker_uid>
 #
-# For give:
-# Invoke give-assist <taker>- if it fails, we stop.
+#	Work flow:
 #
-# Copy (with checking), filename from current directory to
-# spool directory.  Chmod destination file.  Touch file (to update ctime).
+#	Validate args: giver, taker, gt-<taker_uid>
 #
-# Opts to honor:
+#	For give:
+#	Invoke give-assist <taker>- if it fails, we stop.
 #
-# -Vulhnrif
-# V: version (use --version)
-# u: ungive
-# l: list
-# n: compact list (not implmented in give 1.25a)
-# r: recursive give (not imp. in give 1.25a)-- WE DO NOT YET IMPLEMENT
-# i: interactive
-# f: force overwrite
-# h: help
+#	Copy (with checking), filename from current directory to
+#	spool directory.  Chmod destination file.  Touch file (to update ctime).
 #
-# assume give- if named 'take' assume take.
+#	Opts to honor:
 #
-# if invoked with no args, then list (have given, or to take).
+#	-Vulhnrif
+#	V: version (use --version)
+#	u: ungive
+#	l: list
+#	n: compact list (not implmented in give 1.25a)
+#	r: recursive give (not imp. in give 1.25a)-- WE DO NOT YET IMPLEMENT
+#	i: interactive
+#	f: force overwrite
+#	h: help
 #
-# Python 2.3+
-#####################################################################
+#	assume give- if named 'take' assume take.
+#
+#	if invoked with no args, then list (have given, or to take).
+#
+#	Python 2.3+
+#==========================================================================
 # 
 
-import sys, os, pwd, grp, time
+import sys, os, pwd, grp, time, subprocess
 from optparse import OptionParser
 try:
 	import readline
 except:
 	pass
 
-
-VERSION="%prog 3.0n"
-SPOOL="/net/givedir"
-ASSIST="/usr/bin/give-assist"
+##	STRICT will be set to 0 if non-strict checking was enabled at config time, or 1 by default (if non-strict checking wasn't enabled)
+STRICT=0
+##	SPOOL will be set to /usr/givedir at config time, unless ./config --enable-givedir=DIR is passed in at config time, then the SPOOL = DIR
+SPOOL="/usr/givedir"
+VERSION="%prog 3.1-3"
+ASSIST="/usr/bin/give-assist"          
 COPY="/bin/cp"
 TOUCH="/bin/touch"
 assist_rec = {}
 debug_mode = False
 
-#####################################################################
+#==========================================================================
 #  Functions
 #
-# Try to run give-assist only once.
+
+##
+# 	give-assist is ran here, it will use a c binary to elevate perms so that dirs can be made with the right perms safely
+#
+# 	this way giver can: give, ungive, list files given 
+#	taker can: take and list files to take
+#	
+#	@param toname it is whomever is receiving the file
 #
 def run_assist(toname=None):
 	if toname == None:
@@ -61,11 +82,25 @@ def run_assist(toname=None):
 	if toname not in assist_rec:
 		assist_rec.setdefault(toname, True)
 		try:
-			os.spawnlp(os.P_WAIT, ASSIST, ASSIST, toname)
+			ret = subprocess.call([ASSIST, toname])
+			if ret != 0:
+				#not going to output an error message here because give-assist SHOULD output it's own before exiting.
+				sys.exit(ret)
 		except:
 			print "Problem running %s." % ASSIST
 			sys.exit(1)
 
+##
+#	this will copy the file from 'frompath'  to 'topath' (givedir)
+#
+#	it makes sure the file exists in the frompath
+#	then copies.
+#
+#	@param frompath the directory where the file being given is located
+#	@param topath the directory where the file will be copied to (givedir)
+#	@param preserve if this is true, the timestamp is preserved on the giver's local file
+#	@return retcode from os calls to see if the file exists and copy
+#
 def run_copy(frompath=None, topath=None, preserve=True):
 	retcode = 0
 	if (frompath == None or topath == None):
@@ -74,9 +109,9 @@ def run_copy(frompath=None, topath=None, preserve=True):
 	if os.access(frompath, os.F_OK):
 		try:
 			if preserve:
-				retcode = os.spawnlp(os.P_WAIT, COPY, COPY, '-p', frompath, topath)
+				retcode = subprocess.call([COPY, '-p', frompath, topath])
 			else:
-				retcode = os.spawnlp(os.P_WAIT, COPY, COPY, frompath, topath)
+				retcode = subprocess.call([COPY, frompath, topath])
 		except:
 			print "Problem running %s." % COPY
 			sys.exit(1)
@@ -85,6 +120,13 @@ def run_copy(frompath=None, topath=None, preserve=True):
 		retcode = 1 # signal a problem
 	return retcode
 
+##
+#	this fixes perms on the file.
+#	
+#	it will use statbuf and chmod to change the perms, then it calls /bin/touch to update the new file's timestamp for the taker
+#
+#	@param path the path of the file given (givedir/.....)
+#
 def fix_perms(path=None):
 	if (path == None):
 		print "Cannot fix permissions: no path"
@@ -95,7 +137,11 @@ def fix_perms(path=None):
 		print "No such file %s." % path
 		sys.exit(1)
 
-	oldmode = statbuf.st_mode & 0777
+##
+#	mask out excessive world permissions if set by giver	
+#	use "0774" instead of original "0777"	-gap, Oct 2012
+##
+	oldmode = statbuf.st_mode & 0774
 	newmode = oldmode | 0444 # make readable
 	try:
 		os.chmod(path, newmode)
@@ -103,12 +149,21 @@ def fix_perms(path=None):
 		print "Failed chmod on file %s." % path
 		sys.exit(1)
 	try:
-			retcode = os.spawnlp(os.P_WAIT, TOUCH, TOUCH, path)
+			retcode = subprocess.call([TOUCH, path])
 	except:
 		print "Failed touch operation on file %s." % path
 		sys.exit(1)
-	
 
+##	
+#	this is ran if verbose option is used, it is interactive with the user
+#	it requires the user to type y or Y for yes, if anything else input 
+#	it will take that as a no and return false
+#
+#	this is only ran if the the verbose option is passed in, it creates the interactivity
+#
+#	@param prompt this will be the question we are asking the user
+#	@return true if the user allows, false if not
+#
 def isokto(prompt=None):
 	if prompt == None:
 		prompt = "? "
@@ -119,6 +174,14 @@ def isokto(prompt=None):
 	else:
 		return False
 
+##
+#	we call run_assist to help give the file, check to see if the file exists in the dir, then give the file using run_copy, finally change perms using fix_perms
+#	
+#	@param fuid the givers's uid
+#	@param tuid the taker's uid
+#	@param path the location of the file the giver is giving
+#	@param prompt if prompt is true that means verbose was enabled, this will run isokto
+#
 def give_file(fuid=None, tuid=None, path=None, prompt=False):
 	retcode = 0
 	count = 1
@@ -155,6 +218,16 @@ def give_file(fuid=None, tuid=None, path=None, prompt=False):
 		print "Attempt to give file <None>\n"
 		sys.exit(1)
 
+##
+#	this is almost the same as give, but will 'un-give' the file.
+#	it uses os.unlink to delete the file in the givedir
+#
+#	@param tuid takers uid
+#	@param fuid "un-giver's" uid
+#	@param path the name of the file to be deleted
+#	@param prompt if prompt is true that means verbose was enabled, this will run isokto, otherwise interactivity isn't enabled
+#	@return 1 for success
+#
 def ungive_file(fuid=None, tuid=None, path=None, prompt=False):
 	if (tuid != None and fuid != None and path != None):
 		if prompt and not isokto("Ungive file %s, given to %s? " % (path, tuid)):
@@ -175,6 +248,16 @@ def ungive_file(fuid=None, tuid=None, path=None, prompt=False):
 		print "Attempt to use bad parameters to ungive_file\n"
 		sys.exit(1) 
 
+##
+#	this will take the file and copy it into the taker's current directory
+#	if the copy is successful, it will delete the file from the givedir using os.unlink
+#
+#	@param fuid the giver's uid
+#	@param tuid the taker's uid
+#	@param path the file to be 'taken'
+#	@param prompt if prompt is true that means verbose was enabled, this will run isokto, otherwise intractivity isn't enabled
+#
+#
 def take_file(fuid=None, tuid=None, path=None, prompt=False):
 	count = 1
 	retcode = 0
@@ -215,6 +298,13 @@ def take_file(fuid=None, tuid=None, path=None, prompt=False):
 		print "Attempt to use bad parameters to take_file\n"
 		sys.exit(1)
 
+##
+#	this is used to generate the list of files in the directories, or enumerate the files to be listed
+#
+#	@param f the giver usrname
+#	@param t the taker usrname
+#	@return dlist the list of files in the directory spool/taker/from
+#
 def enumerate_files(f=None, t=None):
 	if t == None:
 		return ()
@@ -239,6 +329,14 @@ def enumerate_files(f=None, t=None):
 	dlist.sort()
 	return dlist
 
+##
+#	this is used to list a file, to do this os.path.basename is used on the path.
+#	if brief is true then the name of the file is listed, if brief is false then the 
+#	size of the file is listed, along with the timestamp
+#
+#	@param path the file to be listed, it includes the full path
+#	@param brief this is used to determine what info is printed.
+#
 def list_a_file(path=None, brief=False):
 	if path == None:
 		return
@@ -273,6 +371,14 @@ def list_a_file(path=None, brief=False):
 	except:
 		return
 
+##
+#	this will list a directory which is path, it cals list_a_file to list the files in the path.
+#	
+#	@param path the directory that will be listed
+#	@param brief passed into list_a_file see that param section
+#	@param header this is printed above the files in the directory, it says (user has given:) 
+#	@return the amount of files in the dir
+#
 def list_a_directory(path=None, brief=False, header=None):
 	try:
 			dlist = os.listdir(path)
@@ -285,7 +391,14 @@ def list_a_directory(path=None, brief=False, header=None):
 			return len(dlist)
 	except:
 		return 0
-
+##
+#
+#	in the case we have no getpwnam() data for a giver, we
+#	attempt to fake it from data in the directory.
+#
+#	@param giver giver's username
+#	@param taker taker's username
+#
 def get_giverpw_from_dir(giver=None, taker=None):
 	# in the case we have no getpwnam() data for a giver, we
 	# attempt to fake it from data in the directory.
@@ -296,6 +409,16 @@ def get_giverpw_from_dir(giver=None, taker=None):
 		return None
 	return pwd.struct_passwd.__new__(pwd.struct_passwd, (giver, "x", statbuf.st_uid, statbuf.st_uid, giver, "/no_dir_exists", "/bin/false"))
 
+##
+#	list the files you have given, this is invoked if give is ran w/o params.
+#	it uses os.listdir on spool, then sorts the subdirs and calls list_a_directory 
+#	to list the files. It 
+#
+#	@param myuid this is the username of the invoking user
+#	@param theiruid this is the username of the person that was given the file
+#	@param brief this will determine if it tells the amount of files given
+#
+#
 def list_files_given(myuid=None, theiruid=None, brief=False):
 	totalcount = 0
 	if myuid != None:
@@ -324,7 +447,16 @@ def list_files_given(myuid=None, theiruid=None, brief=False):
 	else:
 		print "Attempt to use bad parameters to list_files_given\n"
 		sys.exit(1)
-		
+
+##
+#	list the files to take, it calls list a directory to assist with this, it is invoked if take is ran w/o params.
+#	it usees os.listdir on spool/myuid to be able to see what subdirs/files have been given, it prints the name, size, and 
+#	who gave the file.
+#
+#	@param myuid
+#	@param theiruid
+#	@param	brief
+#
 def list_files_totake(myuid=None, theiruid=None, brief=False):
 	totalcount = 0
 	if myuid != None:
@@ -359,11 +491,18 @@ def list_files_totake(myuid=None, theiruid=None, brief=False):
 		print "Attempt to use bad parameters to list_files_totake\n"
 		sys.exit(1)
 
+##
 #
-# We validate various things that should be true-
-# 1) taker/giver usernames map to available users (we can look them up)
-# 2) if group "gt-<taker uid>" exists, then the giver is a member.
-# 3) taker's group exists, and the taker is the ONLY member.
+# 	We validate various things that should be true-.
+#
+# 	1) taker/giver usernames map to available users (we can look them up)
+#
+# 	2) if group "gt-<taker uid>" exists, then the giver is a member
+#
+# 	3) taker's group exists, and the taker is the ONLY member
+#
+#	@param giver_uname giver's username
+#	@param taker_uname taker's username
 #
 def validate_transaction (giver_uname, taker_uname):
 	isvalid = True
@@ -377,7 +516,7 @@ def validate_transaction (giver_uname, taker_uname):
 	if not isvalid:
 		print "Both Giver and Taker must be valid in password database."
 		return isvalid
-	
+		
 	try:
 		grp_ent = grp.getgrnam("gt-"+str(t_ent.pw_uid))
 		isvalid = False
@@ -392,20 +531,29 @@ def validate_transaction (giver_uname, taker_uname):
 		return isvalid
 	
 	try:
-		grp_ent = grp.getgrgid(t_ent.pw_gid)
+		if(STRICT == 1):
+			grp_ent = grp.getgrgid(t_ent.pw_gid)             #gets the default group, which should be equal to uid for LLNL
+			
+			if g_ent.pw_uid != g_ent.pw_gid:
+				print "You are unathorized to give files...uid != gid"
+				isvalid = False
+			if t_ent.pw_uid != t_ent.pw_gid:
+				print "Taker is not authorized to receive files...uid != gid"
+				isvaild = False
+		else:	
+			grp_ent = grp.getgrnam(t_ent.pw_name)			#LANL doesn't require user == default group, so we just get the 'user' group instead of default
 		for x in grp_ent.gr_mem:
 			if x != t_ent.pw_name:
-				isvalid = False # taker must be the only member of their group
-				#print "Taker's default group is not set up correctly, they must be the only member of their default group."
-				#return isvalid
-				return True # LANL's environment allows a user to be in a different group.
+				isvalid = False # taker must be the only member of their user group
+				print "Taker's user group is not set up correctly, they must be the only member of their user group."       #changed *default --> user
+				return isvalid
 	except:
-		print "Taker must have a valid group"
+		print "Can't obtain taker default group info"
 		isvalid = False # group must exist
 
 	return isvalid
 
-#####################################################################
+#=================================================================
 #  Setup
 
 progname = os.path.basename(sys.argv[0])
@@ -488,7 +636,7 @@ if give_mode:
 if opts.compact:
 	opts.list = True
 
-#####################################################################
+#=============================================================================
 #  Main
 
 try:

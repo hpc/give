@@ -541,7 +541,7 @@ def validate_transaction (giver_uname, taker_uname):
 				print "Taker is not authorized to receive files...uid != gid"
 				isvaild = False
 		else:	
-			grp_ent = grp.getgrgid(t_ent.pw_uid)			#LANL doesn't require user == default gid, so we just get the 'user' group instead of default
+			grp_ent = grp.getgrnam(t_ent.pw_name)			#LANL doesn't require user == default gid, so we just get the 'user' group instead of default
 		for x in grp_ent.gr_mem:
 			if x != t_ent.pw_name:
 				isvalid = False # taker must be the only member of their user group

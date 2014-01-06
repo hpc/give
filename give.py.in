@@ -54,9 +54,9 @@ except:
 	pass
 
 ##	STRICT will be set to 0 if non-strict checking was enabled at config time, or 1 by default (if non-strict checking wasn't enabled)
-STRICT=0
+STRICT=@STRICT_CHECKS@
 ##	SPOOL will be set to /usr/givedir at config time, unless ./config --enable-givedir=DIR is passed in at config time, then the SPOOL = DIR
-SPOOL="/usr/givedir"
+SPOOL="@SPOOL@"
 VERSION="%prog 3.1-3"
 ASSIST="/usr/bin/give-assist"          
 COPY="/bin/cp"
@@ -541,7 +541,7 @@ def validate_transaction (giver_uname, taker_uname):
 				print "Taker is not authorized to receive files...uid != gid"
 				isvaild = False
 		else:	
-			grp_ent = grp.getgrnam(t_ent.pw_name)			#LANL doesn't require user == default group, so we just get the 'user' group instead of default
+			grp_ent = grp.getgrgid(t_ent.pw_uid)			#LANL doesn't require user == default gid, so we just get the 'user' group instead of default
 		for x in grp_ent.gr_mem:
 			if x != t_ent.pw_name:
 				isvalid = False # taker must be the only member of their user group

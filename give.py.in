@@ -765,5 +765,3 @@ else:
 			print "No files taken."
 
 sys.exit(0)
-#
-# vim: set ts=4 sw=4:

@@ -91,6 +91,37 @@ def run_assist(toname=None):
 			sys.exit(1)
 
 ##
+#   this will remove a file from the give spool
+#
+#   it is called by run_copy if the copy fails to remove partially written files
+#
+#   @param frompath the directory where the file being given is located (needed to get file name)
+#   @param topath the directory where the file will be copied (give spool)
+#   @param retcode from the os calls to see if the file exists and remove
+#
+def run_remove(frompath=None, topath=None):
+	retcode = 0
+	if (frompath == None or topath == None):
+		print "run_remove: bad args"
+		sys.exit(1)
+	filename = frompath.split('/').pop()
+	filepath = topath+"/"+filename
+	if debug_mode:
+		print "filepath is %s." % filepath
+	if os.access(filepath, os.F_OK):
+		try:
+			print "Removing %s from give spool." % filepath
+			retcode = os.unlink(filepath)
+			if retcode:
+				print "Failed to remove %s." % filepath
+		except:
+			print "Problem running unlink."
+	else:
+		print "No such file to remove: %s." % filepath
+		retcode = 1
+	return retcode
+
+##
 #	this will copy the file from 'frompath'  to 'topath' (givedir)
 #
 #	it makes sure the file exists in the frompath
@@ -112,6 +143,9 @@ def run_copy(frompath=None, topath=None, preserve=True):
 				retcode = subprocess.call([COPY, '-p', frompath, topath])
 			else:
 				retcode = subprocess.call([COPY, frompath, topath])
+			if retcode:
+				print "Copy of %s was unsuccessful." % frompath
+				run_remove(frompath, topath)
 		except:
 			print "Problem running %s." % COPY
 			sys.exit(1)
@@ -141,7 +175,7 @@ def fix_perms(path=None):
 #	mask out excessive world permissions if set by giver	
 #	use "0774" instead of original "0777"	-gap, Oct 2012
 ##
-	oldmode = statbuf.st_mode & 0774
+	oldmode = statbuf.st_mode & 0777
 	newmode = oldmode | 0444 # make readable
 	try:
 		os.chmod(path, newmode)
@@ -553,6 +587,27 @@ def validate_transaction (giver_uname, taker_uname):
 
 	return isvalid
 
+##
+#
+#   Send an email to the taker informing them of the given file
+#
+#   @param giver_ent
+#   @param taker
+#   @param totalcount
+#   @param flist
+#
+def send_email (giver_ent, taker,totalcoutn, glist):
+	giver_gecos = giver_ent.pw_gecos
+	giver_name = giver_gecos.split(',')[0]
+	giver_id = giver_ent.pw_name
+	subj = '%s has given you %d file(s)' % (giver_name, totalcount)
+	body = '%s (%s) has given you %d file(s):\n' % (giver_name, giver_id, totalcount)
+	for fpath in glist:
+		body += "\n%s" % fpath.split('/').pop()
+	mail_cmd = 'echo "%s" | mail -s "%s" %s' % (body, subj, taker)
+	print "Sending email to %s." % taker
+	os.system(mail_cmd)
+
 #=================================================================
 #  Setup
 
@@ -578,6 +633,7 @@ if give_mode:
 	parser.add_option("-l", "--list", action="store_true", dest="list", default=False, help="list files you have given")
 	parser.add_option("-n", "--compact", action="store_true", dest="compact", default=False, help="brief list files you have given")
 	parser.add_option("-a", "--all", "--regive", action="store_true", dest="all", default=False, help="regive all files to user, with overwrite")
+	parser.add_option("-m", "--mail", action="store_true", dest="mail", default=False, help="send e-mail to recipient")
 else:
 	parser.add_option("-l", "--list", action="store_true", dest="list", default=False, help="list files to take")
 	parser.add_option("-f", "--force", action="store_true", dest="force", default=False, help="force overwriting files")
@@ -717,14 +773,19 @@ if give_mode:
 		else:
 			flist = args
 
+		glist = []
 		for fname in flist:
 			if opts.verbose:
 				print "Giving %s." % fname
 			dlen = give_file(giver_ent.pw_name, taker_ent.pw_name, fname, opts.interact)
-			totalcount += dlen
+			if dlen > 0:
+				totalcount += dlen
+				glist.append(fname)
 
 		if totalcount > 0:
 			print "Gave %d file(s)." % totalcount
+			if opts.mail:
+				send_email(giver_ent, taker_ent.pw_name, totalcount, glist)
 		else:
 			print "No files given."
 else:

@@ -7,7 +7,7 @@ give/take -- transfer files between users
 .br
 .B give [-l] [-a] [username]
 .br
-.B give [-l] [-n] [-i] [-f] username list
+.B give [-l] [-n] [-i] [-f] [-q] [-m] username list
 .br
 .B give -u username [list]
 .br
@@ -58,6 +58,11 @@ is specified, restrict the list to files given to
 .TP
 .B \-n
 like the -l option, except use a narrow list format.
+.TP
+.B \-m
+send email to
+.I username
+with a listing of files given.
 .TP
 .B \-q
 quiet mode -- fewer progress messages will be issed.

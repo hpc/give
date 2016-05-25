@@ -1,62 +1,62 @@
-/**	@file give-assist.c
-*	give-assist- create secure directories for file exchange
-*	2010-08-27 Shawn Instenes <shawni@llnl.gov>
+/** @file give-assist.c
+*   give-assist- create secure directories for file exchange
+*   2010-08-27 Shawn Instenes <shawni@llnl.gov>
 *
-*	2012-07 Re-Write for LANL enviornment Jon Bringhurst and Dominic Manno
-*	@author: Shawn Instenes	
-*	@author: Trent D'Hooge  
-*	@author: Jim Garlick 
-*	@author: Jon Bringhurst
-*	@author: Dominic Manno
-*	@author: Ryan Day
-*	@author: Georgia Pedicini
+*   2012-07 Re-Write for LANL enviornment Jon Bringhurst and Dominic Manno
+*   @author: Shawn Instenes 
+*   @author: Trent D'Hooge  
+*   @author: Jim Garlick 
+*   @author: Jon Bringhurst
+*   @author: Dominic Manno
+*   @author: Ryan Day
+*   @author: Georgia Pedicini
 *
-*	This program assists the give program to create a secure
-*	directory structure for the exchange of files, with some
-*	local assumptions:
+*   This program assists the give program to create a secure
+*   directory structure for the exchange of files, with some
+*   local assumptions:
 *
-*	1. each user has a group with the same gid as their uid,
-*	and they are the only member.
+*   1. each user has a group with the same gid as their uid,
+*   and they are the only member.
 *
-*	2. both the giver and the taker usernames can be looked up with
-*	getpwent()
+*   2. both the giver and the taker usernames can be looked up with
+*   getpwent()
 *
-*	For LLNL convienience, a group named "gt-<taker_uid>" may exist.
-*	If it does, then the giver must be a member of that group or the
-*	program will not continue.  (This is also checked in the "give"
-*	program.)
-*
-*
-*	The give spool directory structure is:
-*
-*	SPOOL_ROOT/TAKER_UNAME/GIVER_UNAME/GIVEN_FILENAME
-*
-*	Where:
-*
-*	SPOOL = top level spool directory, owned by root, mode 0755.
-*
-*	TAKER_UNAME = taker's username, owned taker_uid:taker_gid, mode 0711.*
-*
-*	GIVER_UNAME = giver's username, owned giver_uid:taker_gid, mode 0770.
-*
-*	GIVEN_FILENAME = any file, owned giver_uid:giver_gid, mode 0X44
-*	where X is the original owner permission bits.
-*	The perms on the directories are defined this way because the taker needs to own their givedir, the giver needs to own the subdir for which they have given to the taker (for ungive), but the 
-*	taker's gid group also owns this because the taker needs to acess it as well (to take). 
+*   For LLNL convienience, a group named "gt-<taker_uid>" may exist.
+*   If it does, then the giver must be a member of that group or the
+*   program will not continue.  (This is also checked in the "give"
+*   program.)
 *
 *
-*	Goals:
+*   The give spool directory structure is:
 *
-*	A) Files given are owned by giver until taken (for quota purposes)
+*   SPOOL_ROOT/TAKER_UNAME/GIVER_UNAME/GIVEN_FILENAME
 *
-*	B) Filenames are private to giver/taker (ignoring root, of course)
+*   Where:
 *
-*	C) Files may be given and taken without special privledges from giver
-*	to taker after this program has run at least once.
+*   SPOOL = top level spool directory, owned by root, mode 0755.
+*
+*   TAKER_UNAME = taker's username, owned taker_uid:taker_gid, mode 0711.*
+*
+*   GIVER_UNAME = giver's username, owned giver_uid:taker_gid, mode 0770.
+*
+*   GIVEN_FILENAME = any file, owned giver_uid:giver_gid, mode 0X44
+*   where X is the original owner permission bits.
+*   The perms on the directories are defined this way because the taker needs to own their givedir, the giver needs to own the subdir for which they have given to the taker (for ungive), but the 
+*   taker's gid group also owns this because the taker needs to acess it as well (to take). 
 *
 *
-* 	This program checks return codes from everything, and dies if
-* 	anything goes wrong.
+*   Goals:
+*
+*   A) Files given are owned by giver until taken (for quota purposes)
+*
+*   B) Filenames are private to giver/taker (ignoring root, of course)
+*
+*   C) Files may be given and taken without special privledges from giver
+*   to taker after this program has run at least once.
+*
+*
+*   This program checks return codes from everything, and dies if
+*   anything goes wrong.
 */
 
 #define _BSD_SOURCE
@@ -128,21 +128,21 @@ static const bool debug = false;
 
 int main(int argc, char** argv){
 
-    errno_t e;													
+    errno_t e;                                                  
     //int ret;
-    string_m pathname = NULL;									// safe string declared to eventually hold the pathname
-    string_m taker_uname = NULL;								// safe string declared to eventually hold the taker's username, to create a safe string
-    char* zs_taker = NULL;										// will hold the taker's username, created from safe string wrappers
+    string_m pathname = NULL;                                   // safe string declared to eventually hold the pathname
+    string_m taker_uname = NULL;                                // safe string declared to eventually hold the taker's username, to create a safe string
+    char* zs_taker = NULL;                                      // will hold the taker's username, created from safe string wrappers
 
-    long s_passwd_size = 0L;									
-    struct passwd* giver_ent = NULL;							// pointer that will point to giver's pwd struct, so info pertaining to passwd file can be looked up
-	struct passwd* taker_ent = NULL;							// pointer that will point to taker's pwd struct, so info pertaining to passwd file can be looked up
-    char* taker_buf = NULL;										// string created to be buffer for taker using the s_passwd_size
-	char* giver_buf = NULL;										// string created to be buffer for giver using the s_passwd_size
-    struct passwd taker_s;										// passwd struct to hold the taker's passwd info, needed when calling getpwnam_r
-	struct passwd giver_s;										// passwd struct to hold the giver's passwd info, needed when calling getpwuid_r
-	
-	
+    long s_passwd_size = 0L;                                    
+    struct passwd* giver_ent = NULL;                            // pointer that will point to giver's pwd struct, so info pertaining to passwd file can be looked up
+    struct passwd* taker_ent = NULL;                            // pointer that will point to taker's pwd struct, so info pertaining to passwd file can be looked up
+    char* taker_buf = NULL;                                     // string created to be buffer for taker using the s_passwd_size
+    char* giver_buf = NULL;                                     // string created to be buffer for giver using the s_passwd_size
+    struct passwd taker_s;                                      // passwd struct to hold the taker's passwd info, needed when calling getpwnam_r
+    struct passwd giver_s;                                      // passwd struct to hold the giver's passwd info, needed when calling getpwuid_r
+    
+    
 
     //try to ignore debuggers
     if(check_for_debuggers()){
@@ -158,21 +158,21 @@ int main(int argc, char** argv){
     //disable memory dumps
     limit_cores();
 
-	//these next three checks will make sure that only one arg is passed in for the call to give-assist
-	//if 0 or 2+ then the usage of give-assist is printed to stdout
-	//the third checks to be sure that suid or root is running give-assist
+    //these next three checks will make sure that only one arg is passed in for the call to give-assist
+    //if 0 or 2+ then the usage of give-assist is printed to stdout
+    //the third checks to be sure that suid or root is running give-assist
     if(argc != 2){
-    	die_zs(GA_VERSION " usage: give-assist <taker_username>");
-	}
-    if(argv == NULL){
-    	die_zs(GA_VERSION " usage: give-assist <taker_username>");
+        die_zs(GA_VERSION " usage: give-assist <taker_username>");
     }
-	
-	    
+    if(argv == NULL){
+        die_zs(GA_VERSION " usage: give-assist <taker_username>");
+    }
+    
+        
     if(geteuid() != 0){
         die_zs("give-assist must be run as root or suid");
     }
-	
+    
     //We won't tolerate odd characters in the usernames- we mkdir later.
     //This is the first and last time we use argv.
     e = strcreate_m(&taker_uname, argv[1], 0, ACCEPTABLE_CHARS);
@@ -184,81 +184,81 @@ int main(int argc, char** argv){
     s_passwd_size = sysconf(_SC_GETPW_R_SIZE_MAX);
 
     if(s_passwd_size == 0L){
-    	die_zs("System configuration error: _SC_GETPW_R_SIZE_MAX is zero.");
-	}
+        die_zs("System configuration error: _SC_GETPW_R_SIZE_MAX is zero.");
+    }
     taker_buf = (char*) calloc((size_t) 1, (size_t) s_passwd_size);
     giver_buf = (char*) calloc((size_t) 1, (size_t) s_passwd_size);
 
     if(taker_buf == NULL || giver_buf == NULL){
-    	die_zs("Out of memory.");
-	}
+        die_zs("Out of memory.");
+    }
 
     // Ok, sizes and buffers are all ready so:
-	//these will get the passwd structs and assign them to pointer giver_ent and taker_ent for respective person
-	//accesses the passwd file for this, struct is defined in /usr/include/pwd.h
-	//the actual struct is stored in giver_s and taker_s, using getpwuid_r and getpwnam_r is safer because of the size limit
+    //these will get the passwd structs and assign them to pointer giver_ent and taker_ent for respective person
+    //accesses the passwd file for this, struct is defined in /usr/include/pwd.h
+    //the actual struct is stored in giver_s and taker_s, using getpwuid_r and getpwnam_r is safer because of the size limit
     //by using try_err we make sure that we have a success when calling these functions, if info not found msg is printed
-	try_err((errno_t)getpwuid_r(getuid(), &giver_s, giver_buf, s_passwd_size, &giver_ent), "Cannot find your user information.");
+    try_err((errno_t)getpwuid_r(getuid(), &giver_s, giver_buf, s_passwd_size, &giver_ent), "Cannot find your user information.");
 
     try_err((errno_t)getpwnam_r(zs_taker, &taker_s, taker_buf, s_passwd_size, &taker_ent), "Cannot find taker user information.");
 
-	    
-	if(taker_ent == NULL || giver_ent == NULL){
-    	die_zs("getpw(nam|uid) returned null buffer- out of memory?");
-	}
-	
-	//if non-strict checking is enabled at config it will set STRICT_CHECKING to 0, so it will not execute these checks, the default is for STRICT_CHECKING to = 1, so that these checks will run
+        
+    if(taker_ent == NULL || giver_ent == NULL){
+        die_zs("getpw(nam|uid) returned null buffer- out of memory?");
+    }
+    
+    //if non-strict checking is enabled at config it will set STRICT_CHECKING to 0, so it will not execute these checks, the default is for STRICT_CHECKING to = 1, so that these checks will run
     if(STRICT_CHECKING){
-		if(taker_ent->pw_uid != taker_ent->pw_gid){						
-    		die_zs("Taker is not authorized to receive files (uid != gid).");
-		}
-    	if(giver_ent->pw_uid != giver_ent->pw_gid){						
-    		die_zs("You are not authorized to give files (uid != gid).");
-		}
-	
-    	if(!gt_access_ok(giver_ent, taker_ent)){						
-    		die_zs("You are not authorized to give files to that user.");
-		}
-	}
-	
-    if(!taker_group_ok(taker_ent)){						
-    	die_zs("Taker must be sole member of their username group.");
-	}
+        if(taker_ent->pw_uid != taker_ent->pw_gid){                     
+            die_zs("Taker is not authorized to receive files (uid != gid).");
+        }
+        if(giver_ent->pw_uid != giver_ent->pw_gid){                     
+            die_zs("You are not authorized to give files (uid != gid).");
+        }
+    
+        if(!gt_access_ok(giver_ent, taker_ent)){                        
+            die_zs("You are not authorized to give files to that user.");
+        }
+    }
+    
+    if(!taker_group_ok(taker_ent)){                     
+        die_zs("Taker must be sole member of their username group.");
+    }
     if(debug){
         printf("ok giver: %s\n", giver_ent->pw_name);
         printf("ok taker: %s\n", taker_ent->pw_name);
     }
 
-	
+    
     if(!give_spool_ok(SPOOL_DIRECTORY)){
         // this shouldn't happen- if it returns at all it's good.
         die_zs("give_spool_ok() returned zero");
     }
-	
-	//wrappers for safe strings, creating pathname from SPOOL (SPOOL/taker's_username)
+    
+    //wrappers for safe strings, creating pathname from SPOOL (SPOOL/taker's_username)
     // these may fail on malloc() but otherwise no.
     try_m(strcreate_m(&pathname, SPOOL_DIRECTORY, 0, NULL));
     try_m(cstrcat_m(pathname, "/"));
     try_m(cstrcat_m(pathname, taker_ent->pw_name));
-    (void) umask((mode_t) 0); 	// we will be setting exact mkdir/chmod perms.
+    (void) umask((mode_t) 0);   // we will be setting exact mkdir/chmod perms.
     
-	//make the directory SPOOL/taker, it is owned by (taker:taker_default_group) only the taker should have acess to this dir, but perms 0711 are needed so that givers can get into their specific subdir
+    //make the directory SPOOL/taker, it is owned by (taker:taker_default_group) only the taker should have acess to this dir, but perms 0711 are needed so that givers can get into their specific subdir
     safe_mkdir_m(pathname, 0711, taker_ent->pw_uid, taker_ent->pw_gid);
     
-	//wrappers for safe strings to be able to create next dir
+    //wrappers for safe strings to be able to create next dir
     try_m(cstrcat_m(pathname, "/"));
     try_m(cstrcat_m(pathname, giver_ent->pw_name));
     
-	//make the directory SPOOL/taker/giver, it is owned by (giver:taker_default_group) this is to enable ungive functionality, perms 0770 allow all access to giver and taker, none to world
+    //make the directory SPOOL/taker/giver, it is owned by (giver:taker_default_group) this is to enable ungive functionality, perms 0770 allow all access to giver and taker, none to world
     safe_mkdir_m(pathname, 0770, giver_ent->pw_uid, taker_ent->pw_gid);
 
 
     if(debug){
-    	emit("PATH = ", pathname, "\n");
-	}
+        emit("PATH = ", pathname, "\n");
+    }
 
-	free(taker_buf);        //make sure we are cleaning up!
-	free(giver_buf);
+    free(taker_buf);        //make sure we are cleaning up!
+    free(giver_buf);
     exit(EXIT_SUCCESS);
 }
 

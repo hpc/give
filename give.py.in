@@ -178,15 +178,15 @@ def fix_perms(path=None):
 
     #py 2.6 allows for either 0777 or 0o777 for chmod
     #anything before 2.6 likes 0777 and anything after
-    #likes 0o777, so decide which to use here
-    if sys.version_info[0] == 2 and sys.version_info[1] < 6:
-        oldmode = statbuf.st_mode & 0777
-        newmode = oldmode | 0444 # make readable
+    #wants 0o777, so we use a string and then an int with
+    #base=8 to convert for us...what a nightmare!
+    oldModeStr = "0777"
+    newModeStr = "0444"
 
-    else:
-        oldmode = statbuf.st_mode & 0o777
-        newmode = oldmode | 0o444 # make readable
-    
+    oldmode = statbuf.st_mode & int(oldModeStr, base=8)
+    newmode = oldmode | int(newModeStr, base=8)
+
+ 
     try:
         os.chmod(path, newmode)
     except:

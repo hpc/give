@@ -1,6 +1,9 @@
 Installation of 'give' and 'take'
 ===============================================================================================================================================================================================================
 
+If you use the spec file, be sure to change the version string to your liking. The current version string includes "ptools" to differentiate for lanl use case vs toss included rpm.
+
+
 Manual Install:
 
 	$ git clone git@git.lanl.gov:filesystems/give.git give-3.1-1 ****DON'T DO THIS YET, GITHUB HASN'T HAD THE NEW CODE PUSHED ONTO IT. IF YOU'RE READING THIS YOU HAVE THE CODE ALREADY ANYWAY :)	

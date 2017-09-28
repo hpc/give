@@ -1,5 +1,5 @@
 %define realname give
-%define realversion 3.1-3
+%define realversion 3.1-4
 
 #don't strip binaries
 %define __os_install_post /usr/lib/rpm/brp-compress
@@ -95,13 +95,12 @@ rm -rf $RPM_BUILD_ROOT
 %{_mandir}/man1/*
 	
 
-##
-## vim: set ts=4 sw=4:
-####
 %changelog
  * Tue Aug 14 2012 Dominic Manno <dmanno@lanl.gov>
 - Original; LANL version to add alt-givedir and no-strict-checking options
  * Thu Nov 01 2012 Georgia Pedicini <gap@lanl.gov>
 - LANL version 3.1-2, tighten permissions
  * Tue Nov 06 2012 Georgia Pedicini <gap@lanl.gov>
-- Added defined text string to include in description, citing which (if any) options were used in the build. 
+- Added defined text string to include in description, citing which (if any) options were used in the build.
+ * Wed May 25 2016 Dominic Manno <dmanno@lanl.gov>
+- Converted to be python2 and python3 compatible, mostly print statement to function calls 

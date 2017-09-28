@@ -1,8 +1,6 @@
-GIVE/TAKE -- updated 07-2012
+GIVE/TAKE 
 
 original author: Shawn Instenes
-
-latest modifications: Dominic Manno <dmanno@lanl.gov>  07-2012
 
 Description:
 Giveng is a reimplementation of our give and take programs, with careful consideration of security in mind. 

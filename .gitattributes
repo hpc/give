@@ -1,0 +1,10 @@
+INSTALL linguist-documentation
+COPYING linguist-documentation
+AUTHORS linguist-documentation
+README  linguist-documentation
+html/*  linguist-documentation
+give.1  linguist-documentation
+take.1  linguist-documentation
+string_m/* linguist-vendored
+auxdir/* linguist-vendored
+libtool linguist-vendored

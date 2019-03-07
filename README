@@ -29,9 +29,5 @@ the current design is to: "give user file" or "take user file"
 If you'd like detailed code documenatation access the html folder for doxygen generated docs, this will 
 be useful for a general idea of what the code is doing...same comments are in the code itself.
 
-******  DO NOT EDIT give.py DIRECTLY, INSTEAD MAKE CHANGES TO give.py.in  ******
-******  give.py is generated from give.py.in at config time               ******
-******  if you edit give.py you will lose the changes you made            ******
-
 see INSTALL file for configuration and installation instructions.
 

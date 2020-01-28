@@ -57,7 +57,7 @@ except:
 STRICT=@STRICT_CHECKS@
 ##  SPOOL will be set to /usr/givedir at config time, unless ./config --enable-givedir=DIR is passed in at config time, then the SPOOL = DIR
 SPOOL="@SPOOL@"
-VERSION="%prog 3.1-4"
+VERSION="%prog 3.1-5"
 ASSIST="/usr/bin/give-assist"          
 COPY="/bin/cp"
 TOUCH="/bin/touch"
@@ -392,22 +392,22 @@ def list_a_file(path=None, brief=False):
             statbuf = os.stat(path)
             fsize = statbuf.st_size
             # love having bigints built-in to the language.
-            if (fsize / 2**80) > 0:
-                sc = "YB"; psize = fsize / 2**80
-            elif (fsize / 2**70) > 0:
-                sc = "ZB"; psize = fsize / 2**70
-            elif (fsize / 2**60) > 0:
-                sc = "EB"; psize = fsize / 2**60
-            elif (fsize / 2**50) > 0:
-                sc = "PB"; psize = fsize / 2**50
-            elif (fsize / 2**40) > 0:
-                sc = "TB"; psize = fsize / 2**40
-            elif (fsize / 2**30) > 0:
-                sc = "GB"; psize = fsize / 2**30
-            elif (fsize / 2**20) > 0:
-                sc = "MB"; psize = fsize / 2**20
-            elif (fsize / 2**10) > 0:
-                sc = "KB"; psize = fsize / 2**10
+            if (fsize // 2**80) > 0:
+                sc = "YB"; psize = fsize // 2**80
+            elif (fsize // 2**70) > 0:
+                sc = "ZB"; psize = fsize // 2**70
+            elif (fsize // 2**60) > 0:
+                sc = "EB"; psize = fsize // 2**60
+            elif (fsize // 2**50) > 0:
+                sc = "PB"; psize = fsize // 2**50
+            elif (fsize // 2**40) > 0:
+                sc = "TB"; psize = fsize // 2**40
+            elif (fsize // 2**30) > 0:
+                sc = "GB"; psize = fsize // 2**30
+            elif (fsize // 2**20) > 0:
+                sc = "MB"; psize = fsize // 2**20
+            elif (fsize // 2**10) > 0:
+                sc = "KB"; psize = fsize // 2**10
             else:
                 sc = " B"; psize = fsize
             ctime = time.strftime("%b %d %R", time.localtime(statbuf.st_ctime))

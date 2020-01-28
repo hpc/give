@@ -99,7 +99,7 @@
 
 //IEEE Std 1003.1-2008 says (3.429), use portable filename character set (3.276)
 #define ACCEPTABLE_CHARS "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789._-"
-#define GA_VERSION "give-assist 3.1-4"
+#define GA_VERSION "give-assist 3.1-5"
 
 //these functions are used for error checks and handling
 static void try_m(errno_t result);

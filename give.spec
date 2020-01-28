@@ -1,5 +1,5 @@
 %define realname give
-%define realversion 3.1-4
+%define realversion 3.1-5
 
 #don't strip binaries
 %define __os_install_post /usr/lib/rpm/brp-compress
